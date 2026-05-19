@@ -1,0 +1,34 @@
+services:
+  # 后端服务 - FastAPI
+  backend:
+    build: ./backend
+    container_name: fastadmin-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data  # SQLite 数据持久化
+    environment:
+      - TZ=Asia/Shanghai
+      - DATABASE_URL=sqlite:///./data/fastadmin.db
+      - SECRET_KEY=${SECRET_KEY:-your_secret_key_here_change_in_production}  # 使用环境变量
+    networks:
+      - fastadmin-network
+    restart: unless-stopped
+
+  # 前端服务 - Vue3 + Nginx
+  frontend:
+    build: ./frontend
+    container_name: fastadmin-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - fastadmin-network
+    restart: unless-stopped
+
+networks:
+  fastadmin-network:
+    driver: bridge
